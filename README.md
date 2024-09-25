@@ -9,20 +9,47 @@ VaultGen works by taking a folder that you want to back up and generating a virt
 Here’s a simple **Mermaid graph** that explains the backup and extraction process:
 
 ```mermaid
-graph TD
-    A[Start VaultGen] --> B{Backup or Extract?}
-    B -- Backup --> C[Calculate Folder Size]
-    C --> D[Create Virtual Disk Image]
-    D --> E[Format Disk Image]
-    E --> F[Mount Disk Image]
-    F --> G[Copy Folder to Disk Image]
-    G --> H[Unmount Disk Image]
-    H --> I[Backup Complete!]
+sequenceDiagram
+    participant User
+    participant VaultGen
+    participant DiskImageHandler
+    participant FolderHandler
 
-    B -- Extract --> J[Mount Disk Image]
-    J --> K[Extract Files to Destination Folder]
-    K --> L[Unmount Disk Image]
-    L --> M[Extraction Complete!]
+    User ->> VaultGen: Start VaultGen (backup/extract)
+    
+    alt Backup
+        VaultGen ->> FolderHandler: Calculate folder size
+        FolderHandler -->> VaultGen: Folder size in MB
+        
+        VaultGen ->> DiskImageHandler: Create disk image
+        DiskImageHandler -->> VaultGen: Disk image created
+        
+        VaultGen ->> DiskImageHandler: Format disk image
+        DiskImageHandler -->> VaultGen: Disk image formatted
+        
+        VaultGen ->> DiskImageHandler: Mount disk image
+        DiskImageHandler -->> VaultGen: Disk image mounted
+        
+        VaultGen ->> FolderHandler: Copy folder to disk image
+        FolderHandler -->> VaultGen: Files copied
+        
+        VaultGen ->> DiskImageHandler: Unmount disk image
+        DiskImageHandler -->> VaultGen: Disk image unmounted
+        
+        VaultGen -->> User: Backup Complete
+
+    else Extract
+        VaultGen ->> DiskImageHandler: Mount disk image
+        DiskImageHandler -->> VaultGen: Disk image mounted
+
+        VaultGen ->> FolderHandler: Extract folder from disk image
+        FolderHandler -->> VaultGen: Files extracted
+
+        VaultGen ->> DiskImageHandler: Unmount disk image
+        DiskImageHandler -->> VaultGen: Disk image unmounted
+
+        VaultGen -->> User: Extraction Complete
+    end
 ```
 
 ## Features
